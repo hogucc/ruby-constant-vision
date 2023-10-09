@@ -1,7 +1,7 @@
 {
   "name": "ruby-constant-vision",
   "displayName": "RubyConstantVision",
-  "description": "Enhance your Ruby development experience by providing instant visibility into constants and their corresponding namespaces. Simply focus on a constant and explore potential matching namespaces directly within your coding environment.",
+  "description": "Enhance your Ruby development experience by providing instant visibility into constants and their corresponding namespaces. Simply select a constant and explore potential matching namespaces directly within your coding environment.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.83.0"
