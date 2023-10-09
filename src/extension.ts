@@ -8,24 +8,24 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeTextEditorSelection(e => {
-        if (e.textEditor.selection.isEmpty) {
+        if (e.textEditor.selection.isEmpty || vscode.window.activeTextEditor?.document.languageId !== 'ruby') {
             e.textEditor.setDecorations(decorationType, []);
             return;
         }
 
-        const selectedText = e.textEditor.document.getText(e.textEditor.selection);
+				const selectedText = e.textEditor.document.getText(e.textEditor.selection);
 
-        const line = e.textEditor.selection.start.line;
-        const lineEnd = e.textEditor.document.lineAt(line).range.end;
+				const line = e.textEditor.selection.start.line;
+				const lineEnd = e.textEditor.document.lineAt(line).range.end;
 
-        e.textEditor.setDecorations(decorationType, [{
-            range: new vscode.Range(lineEnd, lineEnd),
-            renderOptions: {
-                after: {
-                    contentText: ` Selected: ${selectedText}`
-                }
-            }
-        }]);
+				e.textEditor.setDecorations(decorationType, [{
+						range: new vscode.Range(lineEnd, lineEnd),
+						renderOptions: {
+								after: {
+										contentText: ` Selected: ${selectedText}`
+								}
+						}
+				}]);
     }, null, context.subscriptions);
 }
 

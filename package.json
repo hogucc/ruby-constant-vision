@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:ruby"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -18,6 +18,12 @@
       {
         "command": "ruby-constant-vision.helloWorld",
         "title": "Hello World"
+      }
+    ],
+    "languages": [
+      {
+          "id": "ruby",
+          "extensions": [ ".rb" ]
       }
     ]
   },
