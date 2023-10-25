@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
+import * as fs from 'fs';
 
 export function activate(context: vscode.ExtensionContext) {
     const decorationType = vscode.window.createTextEditorDecorationType({
@@ -31,12 +32,12 @@ export function activate(context: vscode.ExtensionContext) {
 				try {
 					const origin = await findOriginOfConstant(constantName, context);
 					const candidates = await findConstant(constantName);
-	
+
 					e.textEditor.setDecorations(decorationType, [{
 							range: new vscode.Range(lineEnd, lineEnd),
 							renderOptions: {
 									after: {
-											contentText: ` origin: ${origin}, candidates: ${candidates}`
+										contentText: ` origin: ${origin}, candidates: ${candidates}`
 									}
 							}
 					}]);
@@ -68,8 +69,23 @@ function parseContext(codeBeforeSelection: string): string {
 }
 
 function findOriginOfConstant(constantName: string, context: string): Promise<string> {
+	const currentDirectory = process.cwd();
+	// アクティブなワークスペースのルートディレクトリを取得
+	const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : null;
+
+	if (!workspaceFolder) {
+		return Promise.reject('No active workspace found.');
+	}
+
+	process.chdir(workspaceFolder);
+
 	return new Promise((resolve, reject) => {
-			exec(`ruby -e "require 'constant_vision'; puts ConstantVision.find_origin_of_constant('${constantName}', '${context}')"`, (error, stdout, stderr) => {
+			const isRailsApp = fs.existsSync('config/environment.rb');
+			const command = isRailsApp
+					? `bundle exec rails runner "require 'constant_vision'; puts ConstantVision.find_origin_of_constant('${constantName}', '${context}')"` 
+					: `ruby -e "require 'constant_vision'; puts ConstantVision.find_origin_of_constant('${constantName}', '${context}')"`;
+
+			exec(command, (error, stdout, stderr) => {
 					if (error) {
 							console.error(`exec error: ${error}`);
 							reject(error);
@@ -82,8 +98,19 @@ function findOriginOfConstant(constantName: string, context: string): Promise<st
 }
 
 function findConstant(constantName: string): Promise<string> {
+	const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : null;
+
+	if (!workspaceFolder) {
+		return Promise.reject('No active workspace found.');
+	}
+
+	const isRailsApp = fs.existsSync('config/environment.rb');
+	const command = isRailsApp
+			? `bundle exec rails runner "require 'constant_vision'; puts ConstantVision.find_constant('${constantName}')"` 
+			: `ruby -e "require 'constant_vision'; puts ConstantVision.find_constant('${constantName}')"`;
+
 	return new Promise((resolve, reject) => {
-			exec(`ruby -e "require 'constant_vision'; puts ConstantVision.find_constant('${constantName}')"`, (error, stdout, stderr) => {
+			exec(command, (error, stdout, stderr) => {
 					if (error) {
 							console.error(`exec error: ${error}`);
 							reject(error);
